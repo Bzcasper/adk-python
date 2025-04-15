@@ -8,6 +8,7 @@ import asyncio
 from typing import Dict, Any, List
 import uuid
 
+# Import from the module file, not the directory
 from src.agents.communication import (
     MessageType,
     Message,
