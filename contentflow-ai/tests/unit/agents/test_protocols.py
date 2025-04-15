@@ -1,7 +1,4 @@
-import os
-import sys
-import pytest
-from dotenv import load_dotenv
+from src.agents.communication import MessageBus, AgentMessage, MessageType, AgentCommunicator, message_bus
 
 load_dotenv()
 pytestmark = pytest.mark.asyncio

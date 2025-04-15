@@ -139,15 +139,40 @@ class AudioExtractionAgent:
             )
         )
         
-        # The agent would use ffmpeg to enhance the audio quality
-        # In a real implementation, we would parse the agent's response
+        # Process the agent's response to get the ffmpeg command
+        # In a real implementation, we would extract the ffmpeg command from the response
+        # and execute it to enhance the audio quality
         
-        # For now, we'll return a placeholder result
+        # Determine the input and output formats
         input_format = audio_path.rsplit(".", 1)[-1]
         output_format = output_format or input_format
-        output_path = audio_path.rsplit(".", 1)[0] + f"_enhanced.{output_format}"
+        output_path = (
+            audio_path.rsplit(".", 1)[0] + 
+            f"_enhanced.{output_format}"
+        )
         
-        return {
+        # Build ffmpeg filters based on enhancement options
+        filters = []
+        if noise_reduction:
+            filters.append("arnndn=m=./models/rnnoise-models/bd.rnnn")
+        if normalize:
+            filters.append("loudnorm=I=-16:LRA=11:TP=-1.5")
+        
+        filter_chain = ",".join(filters) if filters else "anull"
+        
+        # Construct ffmpeg command
+        # In a real implementation, we would execute this command
+        ffmpeg_cmd = f"ffmpeg -i {audio_path} -af '{filter_chain}' -c:a {'libmp3lame' if output_format == 'mp3' else 'aac'} -b:a {'320k' if output_format == 'mp3' else '256k'} {output_path}"
+        
+        # Log the command that would be executed
+        print(f"Would execute: {ffmpeg_cmd}")
+        
+        # For now, we'll simulate the enhancement process
+        # In a production environment, we would actually run the ffmpeg command
+        # and capture its output
+        
+        # Create metadata for the enhanced audio
+        enhancement_metadata = {
             "id": str(uuid.uuid4()),
             "input_path": audio_path,
             "output_path": output_path,
@@ -156,13 +181,16 @@ class AudioExtractionAgent:
             "normalize": normalize,
             "enhancement_time": datetime.now().isoformat(),
             "agent": "audio_extractor",
+            "ffmpeg_filters": filter_chain,
             "metadata": {
-                "duration": 300,  # seconds
+                "duration": 300,  # seconds (would be extracted from the actual file)
                 "sample_rate": 44100,
                 "channels": 2,
-                "bitrate": "320k" if output_format == "mp3" else "auto",
+                "bitrate": "320k" if output_format == "mp3" else "256k",
             }
         }
+        
+        return enhancement_metadata
     
     async def analyze_audio_content(
         self,
@@ -225,6 +253,87 @@ class AudioExtractionAgent:
                 "duration": 300,  # seconds
                 "sample_rate": 44100,
                 "channels": 2,
+            }
+        }
+    
+    async def transcribe_audio(
+        self,
+        audio_path: str,
+        language: str = "en",
+        timestamps: bool = True,
+        speaker_diarization: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Transcribe audio content to text.
+        
+        Args:
+            audio_path: The path to the audio file.
+            language: The language of the audio content (default: "en").
+            timestamps: Whether to include timestamps in the transcription (default: True).
+            speaker_diarization: Whether to identify different speakers (default: False).
+            
+        Returns:
+            A dictionary containing the transcription and metadata.
+        """
+        response = await self.agent.generate_content_async(
+            types.Content(
+                parts=[
+                    types.Part.from_text(
+                        f"Transcribe this audio file: {audio_path}\n"
+                        f"Language: {language}\n"
+                        f"Include timestamps: {timestamps}\n"
+                        f"Speaker diarization: {speaker_diarization}"
+                    )
+                ]
+            )
+        )
+        
+        # In a real implementation, we would use a speech-to-text service
+        # like Google Speech-to-Text, Whisper, or another transcription service
+        # and parse the agent's response to get the transcription
+        
+        # For now, we'll return a simulated transcription result
+        transcription_id = str(uuid.uuid4())
+        transcription_time = datetime.now().isoformat()
+        
+        # Simulate transcription segments with timestamps
+        segments = []
+        if timestamps:
+            # Create 10 segments of 30 seconds each
+            for i in range(10):
+                start = i * 30.0
+                end = (i + 1) * 30.0
+                text = f"This is a simulated transcription segment {i+1}."
+                
+                if speaker_diarization:
+                    speaker = "Speaker A" if i % 2 == 0 else "Speaker B"
+                    text = f"{speaker}: {text}"
+                
+                segments.append({
+                    "start": start,
+                    "end": end,
+                    "text": text,
+                    "confidence": 0.95 - (i * 0.01)  # Slightly decreasing confidence
+                })
+        
+        # Combine segments into full text
+        full_text = "\n".join([segment["text"] for segment in segments]) if segments else \
+                   "This is a simulated transcription of the audio content."
+        
+        return {
+            "id": transcription_id,
+            "audio_path": audio_path,
+            "language": language,
+            "transcription": full_text,
+            "segments": segments,
+            "timestamps": timestamps,
+            "speaker_diarization": speaker_diarization,
+            "transcription_time": transcription_time,
+            "agent": "audio_extractor",
+            "metadata": {
+                "duration": 300,  # seconds (would be extracted from the actual file)
+                "confidence": 0.92,  # Overall confidence score
+                "model": "simulated-stt-model",  # In production, this would be the actual model used
             }
         }
     

@@ -10,6 +10,7 @@ python-multipart>=0.0.9
 
 # ML and data processing
 transformers>=4.38.0
+# Using latest torch version compatible with Python 3.13
 torch>=2.2.0
 numpy>=1.26.0
 pandas>=2.2.0
@@ -20,7 +21,11 @@ modal>=0.55.4
 python-dotenv>=1.0.0
 
 # High-performance model serving
-vllm>=0.3.0
+# vllm is commented out for local development since it's not compatible with Python 3.13
+# It will be installed in the Modal deployment environment which uses Python 3.11
+# vllm>=0.3.0
+# ray is a dependency of vllm that also lacks Python 3.13 wheels
+# ray[default]>=2.9.0
 accelerate>=0.27.0
 safetensors>=0.4.0
 
@@ -28,4 +33,3 @@ safetensors>=0.4.0
 pytest>=8.3.4
 pytest-mock>=3.14.0
 pytest-asyncio>=0.25.0
-python-dotenv>=1.0.0

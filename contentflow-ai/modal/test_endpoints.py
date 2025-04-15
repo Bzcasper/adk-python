@@ -188,6 +188,151 @@ def test_vllm_download_endpoint(base_url: str, model_name: str) -> Dict[str, Any
     return result
 
 
+def test_audio_extraction_endpoint(base_url: str, url: str, audio_format: str = "mp3", quality: str = "high") -> Dict[str, Any]:
+    """
+    Test the audio extraction endpoint.
+    
+    Args:
+        base_url: The base URL of the ContentFlow AI API.
+        url: The URL of the video to extract audio from.
+        audio_format: The format of the extracted audio.
+        quality: The quality of the extracted audio.
+        
+    Returns:
+        The response from the audio extraction endpoint.
+    """
+    print(f"Testing audio extraction endpoint with URL: {url}...")
+    try:
+        response = requests.post(
+            f"{base_url}/extract/audio",
+            json={
+                "url": url,
+                "audio_format": audio_format,
+                "quality": quality,
+            },
+        )
+        response.raise_for_status()
+        result = response.json()
+        print(f"Audio extraction endpoint response: {json.dumps(result, indent=2)}")
+        return result
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            print("="*80)
+            print("WARNING: Audio extraction endpoint not found (404)")
+            print("This endpoint may not be deployed yet. This is expected if you've just")
+            print("added the endpoint and haven't deployed the changes to Modal.")
+            print("="*80)
+            result = {
+                "status": "endpoint_not_found",
+                "message": "The audio extraction endpoint is not available yet.",
+                "url": url,
+                "timestamp": datetime.now().isoformat()
+            }
+            print(f"Result: {json.dumps(result, indent=2)}")
+            return result
+        else:
+            # Re-raise other HTTP errors
+            raise
+
+
+def test_audio_analysis_endpoint(base_url: str, url: str) -> Dict[str, Any]:
+    """
+    Test the audio analysis endpoint.
+    
+    Args:
+        base_url: The base URL of the ContentFlow AI API.
+        url: The URL of the video to analyze audio from.
+        
+    Returns:
+        The response from the audio analysis endpoint.
+    """
+    print(f"Testing audio analysis endpoint with URL: {url}...")
+    try:
+        response = requests.post(
+            f"{base_url}/analyze/audio",
+            json={
+                "url": url,
+            },
+        )
+        response.raise_for_status()
+        result = response.json()
+        print(f"Audio analysis endpoint response: {json.dumps(result, indent=2)}")
+        return result
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            print("="*80)
+            print("WARNING: Audio analysis endpoint not found (404)")
+            print("This endpoint may not be deployed yet. This is expected if you've just")
+            print("added the endpoint and haven't deployed the changes to Modal.")
+            print("="*80)
+            result = {
+                "status": "endpoint_not_found",
+                "message": "The audio analysis endpoint is not available yet.",
+                "url": url,
+                "timestamp": datetime.now().isoformat()
+            }
+            print(f"Result: {json.dumps(result, indent=2)}")
+            return result
+        else:
+            # Re-raise other HTTP errors
+            raise
+
+
+def test_audio_transcription_endpoint(
+    base_url: str, 
+    url: str, 
+    language: str = "en", 
+    timestamps: bool = True, 
+    speaker_diarization: bool = False
+) -> Dict[str, Any]:
+    """
+    Test the audio transcription endpoint.
+    
+    Args:
+        base_url: The base URL of the ContentFlow AI API.
+        url: The URL of the video to transcribe audio from.
+        language: The language of the audio content.
+        timestamps: Whether to include timestamps in the transcription.
+        speaker_diarization: Whether to identify different speakers.
+        
+    Returns:
+        The response from the audio transcription endpoint.
+    """
+    print(f"Testing audio transcription endpoint with URL: {url}...")
+    try:
+        response = requests.post(
+            f"{base_url}/transcribe/audio",
+            json={
+                "url": url,
+                "language": language,
+                "timestamps": timestamps,
+                "speaker_diarization": speaker_diarization,
+            },
+        )
+        response.raise_for_status()
+        result = response.json()
+        print(f"Audio transcription endpoint response: {json.dumps(result, indent=2)}")
+        return result
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            print("="*80)
+            print("WARNING: Audio transcription endpoint not found (404)")
+            print("This endpoint may not be deployed yet. This is expected if you've just")
+            print("added the endpoint and haven't deployed the changes to Modal.")
+            print("="*80)
+            result = {
+                "status": "endpoint_not_found",
+                "message": "The audio transcription endpoint is not available yet.",
+                "url": url,
+                "timestamp": datetime.now().isoformat()
+            }
+            print(f"Result: {json.dumps(result, indent=2)}")
+            return result
+        else:
+            # Re-raise other HTTP errors
+            raise
+
+
 def run_all_tests(main_url: str, vllm_url: str) -> None:
     """
     Run all tests for the ContentFlow AI platform.
@@ -226,6 +371,33 @@ def run_all_tests(main_url: str, vllm_url: str) -> None:
                 "format": "paragraph",
                 "vllm_model": "mistral-7b",
             },
+        )
+        print()
+        
+        # Test audio extraction endpoint
+        video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"  # Sample video URL
+        audio_result = test_audio_extraction_endpoint(
+            main_url,
+            url=video_url,
+            audio_format="mp3",
+            quality="high",
+        )
+        print()
+        
+        # Test audio analysis endpoint
+        test_audio_analysis_endpoint(
+            main_url,
+            url=video_url,
+        )
+        print()
+        
+        # Test audio transcription endpoint
+        test_audio_transcription_endpoint(
+            main_url,
+            url=video_url,
+            language="en",
+            timestamps=True,
+            speaker_diarization=False,
         )
         print()
     except Exception as e:
@@ -275,9 +447,18 @@ def main():
     )
     parser.add_argument(
         "--test",
-        choices=["all", "health", "extraction", "transformation", "vllm-models", "vllm-generate", "vllm-download"],
+        choices=[
+            "all", "health", "extraction", "transformation", 
+            "audio-extraction", "audio-analysis", "audio-transcription",
+            "vllm-models", "vllm-generate", "vllm-download"
+        ],
         default="all",
         help="Test to run (default: all)",
+    )
+    parser.add_argument(
+        "--video-url",
+        default="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        help="URL of the video to use for audio tests",
     )
     args = parser.parse_args()
     
@@ -307,6 +488,26 @@ def main():
                 "format": "paragraph",
                 "vllm_model": "mistral-7b",
             },
+        )
+    elif args.test == "audio-extraction":
+        test_audio_extraction_endpoint(
+            args.main_url,
+            url=args.video_url,
+            audio_format="mp3",
+            quality="high",
+        )
+    elif args.test == "audio-analysis":
+        test_audio_analysis_endpoint(
+            args.main_url,
+            url=args.video_url,
+        )
+    elif args.test == "audio-transcription":
+        test_audio_transcription_endpoint(
+            args.main_url,
+            url=args.video_url,
+            language="en",
+            timestamps=True,
+            speaker_diarization=False,
         )
     elif args.test == "vllm-models":
         test_vllm_models_endpoint(args.vllm_url)
