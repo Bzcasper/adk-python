@@ -1,7 +1,12 @@
-"""Unit tests for MessageBus and AgentMessage in ContentFlow AI."""
-import pytest
-import asyncio
+import os
 import sys
+import pytest
+from dotenv import load_dotenv
+
+load_dotenv()
+
+"""Unit tests for MessageBus and AgentMessage in ContentFlow AI."""
+import asyncio
 import os
 SRC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../src'))
 if SRC_PATH not in sys.path:

@@ -7,6 +7,8 @@ platform, including the container image, GPU requirements, and API endpoints.
 import os
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+import uuid
+from src.agents.extraction.audio_extraction_agent import AudioExtractionAgent
 
 try:
     import modal
@@ -58,7 +60,6 @@ env = {
 # Import our ContentFlow AI agents and tools
 from src.agents.extraction.web_content_agent import WebContentAgent
 from src.agents.extraction.video_download_agent import VideoDownloadAgent
-from src.agents.extraction.audio_extraction_agent import AudioExtractionAgent
 from src.agents.transformation.text_transformation_agent import TextTransformationAgent
 from src.models.serving.vllm_service import vllm_stub, vllm_app, download_model, generate_text
 

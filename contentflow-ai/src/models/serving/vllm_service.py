@@ -11,6 +11,7 @@ import json
 import asyncio
 from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
+import packaging.version
 
 try:
     import modal
@@ -224,7 +225,7 @@ async def generate_text(
     start_time = time.time()
     
     # Use torch.compile if requested
-    if use_torch_compile and torch.__version__ >= "2.0.0":
+    if use_torch_compile and packaging.version.parse(torch.__version__) >= packaging.version.parse("2.0.0"):
         print("Using torch.compile for optimized performance")
         torch._dynamo.config.suppress_errors = True
         

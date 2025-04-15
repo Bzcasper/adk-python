@@ -1,31 +1,52 @@
+import os
+import sys
+import pytest
+from dotenv import load_dotenv
+
+load_dotenv()
+pytestmark = pytest.mark.asyncio
+
 """Tests for agent communication protocols.
 
 This module contains tests for the agent communication protocols in ContentFlow AI.
 """
 
-import pytest
 import asyncio
 from typing import Dict, Any, List
 import uuid
 
+from src.agents.communication.message_bus import MessageBus, AgentMessage
 from src.agents.communication import (
     MessageType,
-    AgentMessage,
-    MessageBus,
     AgentCommunicator,
     message_bus,
 )
 
 
 @pytest.fixture
-def reset_message_bus():
+async def reset_message_bus():
     """Reset the message bus between tests."""
-    # Create a new message bus instance
-    global message_bus
-    message_bus = MessageBus()
-    yield
-    # Clean up after the test
-    message_bus = MessageBus()
+    # Import the module to get the global message bus
+    from src.agents.communication import message_bus
+    
+    # Store all registered agents and their handlers
+    old_bus = message_bus
+    
+    # Create a new message bus
+    from src.agents.communication.message_bus import MessageBus
+    message_bus_new = MessageBus()
+    
+    # Replace the global message bus
+    import src.agents.communication.message_bus as message_bus_module
+    message_bus_module.message_bus = message_bus_new
+    import src.agents.communication as comm_module
+    comm_module.message_bus = message_bus_new
+    
+    yield message_bus_new
+    
+    # Restore the original message bus after the test
+    message_bus_module.message_bus = old_bus
+    comm_module.message_bus = old_bus
 
 
 class TestAgentMessage:

@@ -1,19 +1,12 @@
-"""Agent communication package for ContentFlow AI.
+"""Agent communication module for ContentFlow AI."""
 
-This package provides the communication infrastructure for agents in ContentFlow AI,
-including message types, message bus, and agent communicator.
-"""
+from .message_bus import MessageBus, AgentMessage, MessageType, message_bus
+from .agent_communicator import AgentCommunicator
 
-"""Agent communication package for ContentFlow AI.
-
-This package provides the communication infrastructure for agents in ContentFlow AI,
-including message types, message bus, and agent communicator.
-"""
-
-# Import from the protocols module to make these available at the package level
-from .protocols import (
-    MessageType, AgentMessage, MessageBus, AgentCommunicator
-)
-
-# Create a global message bus instance
-message_bus = MessageBus()
+__all__ = [
+    "MessageBus",
+    "AgentMessage", 
+    "MessageType",
+    "AgentCommunicator",
+    "message_bus",
+]
