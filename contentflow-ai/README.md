@@ -63,12 +63,33 @@ ContentFlow AI is built on a multi-agent architecture using Google's ADK:
 
 ### Deploying to Modal Labs
 
-1. Deploy the application to Modal Labs:
+1. Deploy the API to Modal Labs:
    ```
-   python -m modal.deployment deploy
+   python scripts/deploy_api.py deploy
    ```
 
-2. Access the deployed API at the URL provided by Modal Labs
+2. Test the API locally with Modal:
+   ```
+   python scripts/deploy_api.py serve
+   ```
+
+3. Generate a test JWT token for API authentication:
+   ```
+   python scripts/deploy_api.py token
+   ```
+
+4. Access the deployed API at the URL provided by Modal Labs
+
+### API Authentication
+
+All API endpoints require JWT authentication. Include the token in your requests:
+
+```bash
+curl -X POST "https://your-modal-app-url/content/extract" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com", "type": "web"}'
+```
 
 ## Development
 

@@ -15,10 +15,13 @@ class ProcessingResponse(BaseModel):
     result: dict
     status: str
 
+from ..auth import get_current_user
+from fastapi import Depends
+
 @router.post("/run", response_model=ProcessingResponse)
-def process_content(request: ProcessingRequest):
+def process_content(request: ProcessingRequest, user=Depends(get_current_user)):
     """
-    Process content with a specified operation.
+    Process content with a specified operation (requires authentication).
     """
     # Placeholder for processing logic
-    return ProcessingResponse(result={"summary": "Lorem ipsum"}, status="success")
+    return ProcessingResponse(result={"summary": f"Processed by {user.username}"}, status="success")

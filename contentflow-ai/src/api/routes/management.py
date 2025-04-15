@@ -12,11 +12,26 @@ class ContentItem(BaseModel):
     type: str
     status: str
 
+from typing import Callable, List
+from fastapi import Depends
+
+
+def get_content_items() -> List[ContentItem]:
+    """Default data provider for content items."""
+    return [ContentItem(id="123", title="Sample", type="web", status="completed")]
+
+from ..auth import get_current_user
+from fastapi import Depends
+
+from ..db import get_session
+from ..models.core import Content
+from sqlmodel import select
+
 @router.get("/items", response_model=list[ContentItem])
-def list_content_items():
+def list_content_items(user=Depends(get_current_user)):
     """
-    List all content items.
-    Returns an empty list if monkeypatched by tests.
+    List all content items from the database (requires authentication).
     """
-    # Allow monkeypatching in tests by not hardcoding the list
-    return getattr(list_content_items, "_test_return", [ContentItem(id="123", title="Sample", type="web", status="completed")])
+    with get_session() as session:
+        results = session.exec(select(Content)).all()
+        return results
