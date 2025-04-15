@@ -1,0 +1,544 @@
+# WindsurfRules for ContentFlow AI Project
+
+## Project Overview
+- Project Name: ContentFlow AI
+- Description: Intelligent content repurposing and automation platform
+- Repository: https://github.com/yourusername/contentflow-ai
+- Primary Technologies: Python, Modal Labs, FastAPI, React
+
+## Directory Structure
+```
+contentflow-ai/
+├── api/                     # Backend API code
+│   ├── extractors/          # Content extraction modules
+│   ├── processors/          # Content processing modules
+│   ├── models/              # Data models
+│   └── utils/               # Utility functions
+├── client/                  # Frontend application
+│   ├── public/              # Static files
+│   ├── src/                 # React components and logic
+│   │   ├── components/      # UI components
+│   │   ├── pages/           # Page components
+│   │   ├── services/        # API service calls
+│   │   ├── store/           # State management
+│   │   ├── styles/          # CSS and styling
+│   │   └── utils/           # Frontend utilities
+├── infrastructure/          # Deployment configurations
+│   ├── modal/               # Modal Labs deployment
+│   ├── terraform/           # Infrastructure as code
+│   └── docker/              # Docker configurations
+├── notebooks/               # Research and testing notebooks
+├── scripts/                 # Utility scripts
+│   ├── setup/               # Setup scripts
+│   └── deploy/              # Deployment scripts
+├── tests/                   # Test files
+│   ├── unit/                # Unit tests
+│   └── integration/         # Integration tests
+├── docs/                    # Documentation
+└── .github/                 # GitHub workflows
+```
+
+## Code Style Guidelines
+
+### Python
+
+#### General Python Style
+- Follow PEP 8 guidelines
+- Maximum line length: 100 characters
+- Use 4 spaces for indentation
+- Use snake_case for variables and function names
+- Use CamelCase for class names
+- Use UPPERCASE for constants
+
+#### Import Style
+- Group imports in the following order:
+  1. Standard library imports
+  2. Related third-party imports
+  3. Local application/library specific imports
+- Within each group, imports should be alphabetized
+- Use explicit imports (avoid `from module import *`)
+
+```python
+# Good example
+import os
+import sys
+from typing import Dict, List, Optional
+
+import modal
+import requests
+from fastapi import FastAPI, HTTPException
+
+from api.models import Content
+from api.utils.helpers import format_response
+```
+
+#### Function and Method Guidelines
+- Use descriptive function and method names
+- Add docstrings to all functions and methods using Google style
+- Type hint all function arguments and return values
+
+```python
+def extract_content(url: str, include_images: bool = False) -> Dict[str, Any]:
+    """
+    Extract content from a URL.
+
+    Args:
+        url: The URL to extract content from
+        include_images: Whether to include images in the extraction
+
+    Returns:
+        A dictionary containing the extracted content
+    """
+    # Function implementation
+```
+
+#### Error Handling
+- Use specific exceptions when possible
+- Handle exceptions at appropriate levels
+- Log exceptions with context
+
+```python
+try:
+    content = extract_content(url)
+except RequestError as e:
+    logger.error(f"Failed to extract content from {url}: {str(e)}")
+    raise HTTPException(status_code=400, detail=f"Invalid URL: {str(e)}")
+except ExtractionError as e:
+    logger.error(f"Error during content extraction: {str(e)}")
+    raise HTTPException(status_code=500, detail="Content extraction failed")
+```
+
+### JavaScript/TypeScript (Frontend)
+
+#### General JS/TS Style
+- Use TypeScript for type safety
+- Use 2 spaces for indentation
+- Maximum line length: 80 characters
+- Use camelCase for variables and function names
+- Use PascalCase for component and class names
+- Use semicolons at the end of statements
+
+#### Component Structure
+- One component per file
+- Use functional components with hooks
+- Group related components in subdirectories
+
+```typescript
+// Good example: src/components/ContentCard/ContentCard.tsx
+import React from 'react';
+import { Card, Typography } from 'components/ui';
+import { Content } from 'types';
+import './ContentCard.css';
+
+interface ContentCardProps {
+  content: Content;
+  onSelect: (contentId: string) => void;
+  isSelected: boolean;
+}
+
+export const ContentCard: React.FC<ContentCardProps> = ({
+  content,
+  onSelect,
+  isSelected
+}) => {
+  return (
+    <Card 
+      className={isSelected ? 'content-card selected' : 'content-card'}
+      onClick={() => onSelect(content.id)}
+    >
+      <Typography variant="h4">{content.title}</Typography>
+      <Typography variant="body1">{content.description}</Typography>
+    </Card>
+  );
+};
+```
+
+## Modal Labs Specific Guidelines
+
+### Modal Functions
+- Group related functions in the same Modal app
+- Use descriptive names for Modal apps and functions
+- Use appropriate image configurations for each function
+- Set appropriate timeouts for long-running functions
+- Include error handling in all Modal functions
+
+```python
+@app.function(
+    image=extraction_image,
+    timeout=300,
+    retries=3,
+    memory=1024
+)
+def extract_web_content(url: str, include_images: bool = False) -> Dict[str, Any]:
+    """Extract content from a web page."""
+    try:
+        # Function implementation
+        return result
+    except Exception as e:
+        logger.error(f"Error extracting content from {url}: {str(e)}")
+        return {"error": str(e)}
+```
+
+### Modal Volumes and Secrets
+- Use volumes for persistent storage
+- Use secrets for API keys and credentials
+- Do not hardcode sensitive information
+- Mount volumes at consistent paths
+
+```python
+volume = modal.Volume.from_name("contentflow-data")
+app.secret = modal.Secret.from_name("api-keys")
+
+@app.function(
+    volumes={"/data": volume},
+    secrets=[app.secret]
+)
+def process_with_api(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Process data using external API."""
+    import os
+    api_key = os.environ["API_KEY"]
+    # Function implementation
+```
+
+## Testing Guidelines
+
+### Unit Testing
+- Write unit tests for all functions and components
+- Use pytest for Python unit testing
+- Use Jest and React Testing Library for frontend testing
+- Mock external dependencies in unit tests
+
+```python
+# Python unit test example
+def test_extract_text_from_html():
+    html = "<html><body><h1>Title</h1><p>Paragraph</p></body></html>"
+    result = extract_text_from_html(html)
+    assert result["title"] == "Title"
+    assert "Paragraph" in result["content"]
+```
+
+### Integration Testing
+- Write integration tests for API endpoints
+- Test the full request-response cycle
+- Test error handling paths
+
+```python
+# Integration test example
+def test_extract_content_endpoint():
+    response = client.post(
+        "/extract",
+        json={"url": "https://example.com", "include_images": True}
+    )
+    assert response.status_code == 200
+    assert "task_id" in response.json()
+```
+
+## API Guidelines
+
+### Endpoint Design
+- Use RESTful principles
+- Use appropriate HTTP methods
+- Return meaningful HTTP status codes
+- Include error details in responses
+- Version all APIs
+
+```python
+@app.post("/api/v1/extract")
+async def extract_content(request: ExtractionRequest):
+    """Extract content from a URL."""
+    # Implementation
+    return ExtractionResponse(task_id=task_id, status="processing")
+```
+
+### Request Validation
+- Use Pydantic models for request validation
+- Provide meaningful validation error messages
+- Document all request parameters
+
+```python
+class ExtractionRequest(BaseModel):
+    """Request model for content extraction."""
+    url: HttpUrl
+    include_images: bool = False
+    max_depth: int = Field(1, ge=1, le=5)
+    format: str = Field("markdown", pattern="^(markdown|text|json)$")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "url": "https://example.com",
+                "include_images": True,
+                "max_depth": 2,
+                "format": "markdown"
+            }
+        }
+```
+
+## Deployment Guidelines
+
+### Modal Deployment
+- Use environment-specific configuration
+- Tag deployments with versions
+- Include deployment documentation
+- Test deployments in staging before production
+
+```bash
+# Deployment script example
+modal deploy --api-key $MODAL_API_KEY --env production app.py
+```
+
+### Frontend Deployment
+- Build optimized production bundles
+- Use environment variables for configuration
+- Deploy to CDN for better performance
+- Set up proper caching headers
+
+## Documentation Guidelines
+
+### Code Documentation
+- Document all functions, classes, and methods
+- Include examples in docstrings
+- Document all public APIs
+- Keep documentation up-to-date with code changes
+
+### Project Documentation
+- Include README with project overview and setup instructions
+- Document API endpoints and usage
+- Include architecture diagrams
+- Document deployment and operation procedures
+
+## Git Workflow
+
+### Branch Strategy
+- main: Production-ready code
+- develop: Integration branch for features
+- feature/*: New features
+- bugfix/*: Bug fixes
+- release/*: Release preparation
+
+### Commit Messages
+- Use conventional commit format
+- Include issue references
+- Be descriptive but concise
+
+```
+feat(extractor): add support for video extraction from YouTube
+
+- Add yt-dlp integration for video download
+- Extract video metadata
+- Support multiple video formats
+
+Closes #123
+```
+
+### Pull Requests
+- Include description of changes
+- Reference issues being addressed
+- Include testing steps
+- Require code review before merging
+
+## VSCode-specific Settings
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+    "source.fixAll": true
+  },
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": [
+    "--line-length",
+    "100"
+  ],
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.python"
+  }
+}
+```
+
+## Performance Guidelines
+
+### API Performance
+- Use asynchronous handlers for I/O-bound operations
+- Implement pagination for list endpoints
+- Use caching for frequently accessed resources
+- Set appropriate timeouts for external API calls
+
+### Modal Optimization
+- Use the right resources (CPU, memory, GPU) for each function
+- Use keep_warm for frequently called functions
+- Use parallelization for batch processing
+- Monitor and optimize resource usage
+
+```python
+@app.function(
+    cpu=2.0,
+    memory=4096,
+    keep_warm=1  # Keep 1 instance warm
+)
+def process_batch(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Process a batch of items in parallel."""
+    return [process_item(item) for item in items]
+```
+
+### Frontend Performance
+- Use code splitting for smaller bundle sizes
+- Implement lazy loading for components
+- Optimize images and assets
+- Use memoization for expensive calculations
+
+## Security Guidelines
+
+### API Security
+- Validate all user inputs
+- Use HTTPS for all communications
+- Implement rate limiting
+- Use proper authentication and authorization
+
+### Dependency Management
+- Regularly update dependencies
+- Use dependency scanning for vulnerabilities
+- Pin dependency versions for reproducibility
+- Document dependency requirements
+
+```
+# requirements.txt
+modal==0.73.166
+fastapi==0.115.0
+pydantic==2.5.2
+requests==2.31.0
+transformers==4.37.2
+torch==2.1.2
+```
+
+## Error Handling and Logging
+
+### Error Handling Best Practices
+- Use try/except blocks for error-prone operations
+- Return appropriate HTTP status codes
+- Include detailed error messages for debugging
+- Don't expose sensitive information in errors
+
+### Logging
+- Use structured logging
+- Include context in log messages
+- Log appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- Implement centralized log collection
+
+```python
+import logging
+logger = logging.getLogger(__name__)
+
+def process_item(item_id: str) -> Dict[str, Any]:
+    """Process an item by ID."""
+    logger.info(f"Processing item {item_id}")
+    try:
+        # Processing logic
+        logger.debug(f"Item {item_id} processed successfully")
+        return {"id": item_id, "status": "processed"}
+    except Exception as e:
+        logger.error(f"Failed to process item {item_id}: {str(e)}", exc_info=True)
+        return {"id": item_id, "status": "failed", "error": str(e)}
+```
+
+## Configuration Management
+
+### Environment Variables
+- Use environment variables for configuration
+- Provide default values for non-critical config
+- Document all configuration options
+- Use a configuration loader utility
+
+```python
+import os
+from typing import Dict, Any
+
+def load_config() -> Dict[str, Any]:
+    """Load configuration from environment variables."""
+    return {
+        "debug": os.getenv("DEBUG", "false").lower() == "true",
+        "api_url": os.getenv("API_URL", "http://localhost:8000"),
+        "timeout": int(os.getenv("TIMEOUT", "30")),
+        "max_retries": int(os.getenv("MAX_RETRIES", "3"))
+    }
+```
+
+## Third-Party API Integration
+
+### API Integration Best Practices
+- Use dedicated client libraries when available
+- Implement retries with exponential backoff
+- Set appropriate timeouts
+- Handle API errors gracefully
+
+```python
+def get_with_retry(url: str, max_retries: int = 3, timeout: int = 10) -> Dict[str, Any]:
+    """Get data from URL with retry logic."""
+    retries = 0
+    while retries < max_retries:
+        try:
+            response = requests.get(url, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except (requests.RequestException, ValueError) as e:
+            retries += 1
+            if retries >= max_retries:
+                raise
+            wait_time = 2 ** retries  # Exponential backoff
+            time.sleep(wait_time)
+    raise Exception("Should not reach here")
+```
+
+## Maintenance and Updates
+
+### Code Maintenance
+- Regularly refactor code to remove tech debt
+- Document technical debt and planned improvements
+- Review and update dependencies
+- Keep documentation up-to-date
+
+### Deprecation Policy
+- Clearly mark deprecated features
+- Provide migration path for deprecated features
+- Maintain backward compatibility when possible
+- Communicate deprecation timeline to users
+
+```python
+import warnings
+
+def old_function(param: str) -> str:
+    """
+    Deprecated: Use new_function instead.
+    
+    Will be removed in version 2.0.0.
+    """
+    warnings.warn(
+        "old_function is deprecated and will be removed in version 2.0.0. "
+        "Use new_function instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return new_function(param)
+
+def new_function(param: str) -> str:
+    """New implementation."""
+    return param.upper()
+```

@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contentflow-ai"
+version = "0.1.0"
+description = "Intelligent content repurposing and automation platform"
+readme = "README.md"
+authors = [
+    {name = "ContentFlow AI Team", email = "info@contentflow.ai"}
+]
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Core dependencies
+    "google-adk>=0.1.0",
+    "crawl4ai==0.5",
+    "yt-dlp>=2023.3.4",
+    "ffmpeg-python>=0.2.0",
+    "pydantic>=2.0.0,<3.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "python-multipart>=0.0.9",
+    
+    # ML and data processing
+    "transformers>=4.38.0",
+    "torch>=2.2.0",
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+    "pillow>=10.2.0",
+    
+    # Modal Labs deployment
+    "modal>=0.55.4",
+    
+    # High-performance model serving
+    "vllm>=0.3.0",
+    "accelerate>=0.27.0",
+    "safetensors>=0.4.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "flake8>=6.0.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/contentflow-ai"
+"Bug Tracker" = "https://github.com/yourusername/contentflow-ai/issues"
+
+[tool.setuptools]
+packages = ["contentflow-ai"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = ["transformers.*", "vllm.*", "modal.*", "google.adk.*"]
+ignore_missing_imports = true

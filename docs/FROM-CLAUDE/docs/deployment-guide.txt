@@ -1,0 +1,167 @@
+# Deployment and Integration Guide
+
+This guide provides step-by-step instructions for deploying your Content Extraction API service and integrating it with n8n for monetization.
+
+## Table of Contents
+1. [Deploying the Content Extraction API](#deploying-the-content-extraction-api)
+2. [Setting Up n8n](#setting-up-n8n)
+3. [Configuring n8n Workflows](#configuring-n8n-workflows)
+4. [Setting Up Payment Processing](#setting-up-payment-processing)
+5. [Launching Your Service](#launching-your-service)
+6. [Monitoring and Scaling](#monitoring-and-scaling)
+
+## Deploying the Content Extraction API
+
+### Prerequisites
+- Modal account (sign up at https://modal.com)
+- GitHub account
+- Python 3.9+ installed on your development machine
+
+### Step 1: Set Up Your Local Development Environment
+
+```bash
+# Create a new directory for your project
+mkdir content-extraction-api
+cd content-extraction-api
+
+# Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install Modal and other dependencies
+pip install modal-client fastapi pydantic
+```
+
+### Step 2: Create Your API Code
+
+Create a file called `app.py` and copy the code from the "Content Extraction API" artifact. 
+
+### Step 3: Set Up Modal Secrets
+
+```bash
+# Log in to Modal
+modal token new
+
+# Create secrets for API keys
+modal secret create api-keys API_TOKEN=your-secure-api-token OPENAI_API_KEY=your-openai-key
+```
+
+### Step 4: Create a Volume for Storage
+
+```bash
+# Create a Modal volume for persistent storage
+modal volume create extraction-volume --size 10
+```
+
+### Step 5: Deploy Your API
+
+```bash
+# Deploy your API to Modal
+modal deploy app.py
+```
+
+After deployment, Modal will provide URLs for your API endpoints. Make note of these URLs as you'll need them for n8n integration.
+
+## Setting Up n8n
+
+### Option 1: Self-Hosted n8n
+
+```bash
+# Install n8n globally
+npm install n8n -g
+
+# Start n8n
+n8n start
+
+# Visit http://localhost:5678 to access the n8n interface
+```
+
+### Option 2: n8n Cloud
+
+1. Sign up for n8n Cloud at https://n8n.io
+2. Create a new workspace
+3. Follow the onboarding process
+
+## Configuring n8n Workflows
+
+Now you'll create workflows in n8n to handle your API calls and payment processing.
+
+### Step 1: Create Content Extraction Workflow
+
+1. In n8n dashboard, click "Create new workflow"
+2. Name it "Content Extraction Workflow"
+3. Add a "Webhook" trigger node
+   - Click "Add Webhook"
+   - Set method to "POST"
+   - Save the webhook URL for later
+4. Add a "Function" node to validate input
+   - Connect it to the Webhook node
+   - Copy the validation code from the n8n Workflow Integration Guide
+5. Add an "HTTP Request" node to call your API
+   - Connect it to the Function node
+   - Set method to "POST"
+   - URL: Your Modal API endpoint URL for web extraction
+   - Authentication: Bearer Token (add your API token)
+   - Use the request body format from the n8n Workflow Integration Guide
+6. Add additional nodes for task status checking and summarization as specified in the guide
+7. Click "Save" and then "Activate" to enable the workflow
+
+### Step 2: Create Video Processing Workflow
+
+Follow similar steps to create the Video Processing Workflow as outlined in the n8n Workflow Integration Guide.
+
+### Step 3: Create Monetization Workflow
+
+Follow the steps outlined in the n8n Workflow Integration Guide to create a workflow for handling payments and subscriptions.
+
+## Setting Up Payment Processing
+
+### Stripe Integration
+
+1. Sign up for a Stripe account at https://stripe.com
+2. Create products and price plans that match your subscription tiers
+3. Get your API keys from the Stripe Dashboard
+4. In n8n, install the Stripe node
+5. Configure the Stripe node in your Monetization Workflow:
+   - Add a "Stripe" node
+   - Configure it with your API key
+   - Set up actions for "Create Customer", "Create Subscription", etc.
+
+### PayPal Integration (Alternative)
+
+1. Sign up for PayPal Business at https://www.paypal.com/business
+2. Create a PayPal app in the Developer Dashboard
+3. Get your API credentials
+4. In n8n, install the PayPal node
+5. Configure it similar to the Stripe integration
+
+## Launching Your Service
+
+### Step 1: Create a Simple Marketing Website
+
+1. Create a landing page with your service description, pricing, and sign-up form
+2. Add documentation for your API endpoints
+3. Include example code snippets for integration
+
+### Step 2: Set Up Analytics Dashboard
+
+Deploy the analytics dashboard from the "Monetization Dashboard" artifact:
+
+```bash
+# Install required packages
+pip install streamlit pandas plotly scikit-learn
+
+# Save the dashboard code to a file named dashboard.py
+# Run the dashboard
+streamlit run dashboard.py
+```
+
+### Step 3: Test the Entire Flow
+
+1. Make a test purchase through your website
+2. Verify that the payment is processed
+3. Check that an API key is generated
+4. Test the API endpoints using the generated key
+5. Confirm that usage data appears in your analytics dashboard
+
+## Monitoring and Scaling
